@@ -7,10 +7,12 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.ksp)
 
         kotlin("plugin.serialization") version "2.0.0"
 
 }
+
 
 kotlin {
     androidTarget {
@@ -42,11 +44,15 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kotlinx.coroutines.android)
+
+            implementation ("com.google.android.gms:play-services-location:18.0.0")// or the latest version
+
             implementation(libs.ktor.client.android)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
+
             implementation(compose.material)
             implementation("com.google.code.gson:gson:2.10.1")
             implementation(compose.ui)
@@ -56,8 +62,8 @@ kotlin {
             implementation("io.ktor:ktor-client-logging:$ktorVersion")
             implementation(libs.kotlinx.serialization.json)
             implementation(compose.components.resources)
-            implementation(libs.androidx.room.runtime)
-            implementation(libs.sqlite.bundled)
+
+
             implementation(compose.components.uiToolingPreview)
             implementation(libs.ktor.client.core)
 
@@ -93,6 +99,8 @@ kotlin {
 
 }
 
+
+
 android {
     namespace = "com.trucker.com"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -127,7 +135,12 @@ android {
     }
     dependencies {
         debugImplementation(compose.uiTooling)
+
     }
+}
+dependencies {
+
+    implementation(libs.androidx.work.runtime.ktx)
 }
 
 compose.desktop {

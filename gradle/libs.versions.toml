@@ -3,6 +3,9 @@ agp = "8.2.0"
 android-compileSdk = "34"
 android-minSdk = "24"
 android-targetSdk = "34"
+ksp = "1.9.23-1.0.19"
+sqlite = "2.5.0-SNAPSHOT"
+androidx-room = "2.7.0-alpha01"
 kotlinxSerializationJson = "1.7.1"
 multiplatformSettings = "1.1.1"
 preferenceKtx = "1.2.1"
@@ -27,9 +30,8 @@ ktorClientJson = "2.0.0"
 lifecycleViewmodelCompose = "2.8.0"
 navigationCompose = "2.7.0-alpha07"
 workRuntimeKtx = "2.9.0"
-ksp = "1.9.23-1.0.19"
-sqlite = "2.5.0-SNAPSHOT"
-androidx-room = "2.7.0-alpha01"
+sqliteBundledJvm = "2.5.0-alpha05"
+
 
 [libraries]
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
@@ -38,7 +40,7 @@ settings = { module = "com.russhwolf:multiplatform-settings", version.ref = "mul
 settings-coroutines = { module = "com.russhwolf:multiplatform-settings-coroutines", version.ref = "multiplatformSettings" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "androidx-room" }
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "androidx-room" }
-sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+
 
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktorClientJson" }
@@ -69,6 +71,7 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 androidx-constraintlayout-compose = { group = "androidx.constraintlayout", name = "constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 navigation-compose = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
 androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
+androidx-sqlite-bundled-jvm = { group = "androidx.sqlite", name = "sqlite-bundled-jvm", version.ref = "sqliteBundledJvm" }
 
 [plugins]
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

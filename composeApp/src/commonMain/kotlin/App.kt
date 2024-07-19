@@ -2,6 +2,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -12,14 +15,26 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import org.jetbrains.compose.resources.painterResource
+import org.lighthousegames.logging.logging
+
 import trucker.composeapp.generated.resources.Res
 import trucker.composeapp.generated.resources.truck2
 
 @Composable
-fun App() {
+fun App(driver:(driverId:String)->Unit) {
     MaterialTheme {
+
+
+
+        // Creating UserDao instance and passing in other screens
+
+        val log = logging("userList")
+
+
         val navController = rememberNavController()
-        AppNavigation(navController = navController)
+        AppNavigation(navController = navController){
+driver(it)
+        }
     }
 }
 fun NavHostController.navigateToPrecheck(driverId: String) {
@@ -30,7 +45,9 @@ fun NavHostController.navigateToPrecheck(driverId: String) {
     this.navigate("${Screens.Precheck}?driver=$driverId", options)
 }
 @Composable
-fun AppNavigation(navController: NavHostController) {
+fun AppNavigation(navController: NavHostController,driver:(driverid:String)->Unit) {
+    val driverid by remember { mutableStateOf("0") }
+    driver(driverid)
     NavHost(navController = navController, startDestination = Screens.Login) {
         composable(route = Screens.Login) {
             LoginScreen(navController = navController)
@@ -44,6 +61,7 @@ fun AppNavigation(navController: NavHostController) {
             arguments = listOf(navArgument("driver") { type = NavType.StringType })
         ) { backStackEntry ->
             val driver = backStackEntry.arguments?.getString("driver")
+            driver(driver!!)
             Precheck(driver, navController)
         }
 

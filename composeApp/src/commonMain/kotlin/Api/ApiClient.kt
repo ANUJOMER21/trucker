@@ -55,6 +55,36 @@ class ApiClient {
         val item_name: String,
         val status: String
     )
+    @OptIn(InternalAPI::class)
+    suspend fun sendlocation(driverId: String, lat:String, lonString: String):message?{
+        return  withContext(Dispatchers.Default){
+            try {
+                val formData = MultiPartFormDataContent(
+                    formData {
+                        append("driver_id", driverId)
+                        append("longitude", lonString)
+                        append("latitude", lat)
+                    }
+                )
+                val response:HttpResponse=client.post(Api.Location.url){
+                    method = HttpMethod.Post
+                    contentType(ContentType.MultiPart.FormData)
+                    body = formData
+                }
+                Json.decodeFromString<message>(response.bodyAsText())
+
+                    }catch (e:Exception){
+
+                val log = logging("sendTrailerData1")
+                log.d { e.toString() }
+                e.printStackTrace()
+
+                null
+            }
+        }
+
+
+    }
 @OptIn(InternalAPI::class)
 suspend fun postTrailerCheckData(
     trailerModel: trailer_model
@@ -105,12 +135,12 @@ val response:HttpResponse=client.post(Api.Trailer_precheck.url){
                             append("precheck_items[$index][status]", item.status)
                         }
 
-                        imageUpload?.let {
+                   /*     imageUpload?.let {
                             append("image_upload", it, Headers.build {
                                 append(HttpHeaders.ContentType, "image/jpeg")
                                 append(HttpHeaders.ContentDisposition, "filename=image.jpg")
                             })
-                        }
+                        }*/
                     }
                 )
 
@@ -120,7 +150,7 @@ val response:HttpResponse=client.post(Api.Trailer_precheck.url){
                     body = formData
                 }
 
-                Json.decodeFromString<message>(response.bodyAsText())
+                Json{ignoreUnknownKeys=true}.decodeFromString<message>(response.bodyAsText())
 
             } catch (e: Exception) {
                 val log = logging("sendTruckData1")

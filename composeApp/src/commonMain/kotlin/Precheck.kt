@@ -49,7 +49,7 @@ fun Precheck(driverId: String?, navController: NavController) {
                 //todo remove!
                 checktrailerstatus=res.inspection
                 checktruckstatus=res.truck
-                shownextbtn=!res.endtrip && checktrailerstatus &&checktruckstatus
+                shownextbtn=res.endtrip && checktrailerstatus &&checktruckstatus
                 loading=false
             }
         }
@@ -147,6 +147,8 @@ fun Precheck(driverId: String?, navController: NavController) {
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(backgroundColor = Color(4, 117, 255, 255)),
                     onClick = {
+                        val log = logging("submit Tag")
+                        log.d { "$shownextbtn" }
                         if(shownextbtn){
                         navController.navigate("${Screens.meter}?driver=$driverId")}
                         else{

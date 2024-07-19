@@ -16,6 +16,8 @@ import androidx.compose.ui.unit.dp
 
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.NavOptions
 import com.preat.peekaboo.image.picker.SelectionMode
 import com.preat.peekaboo.image.picker.rememberImagePickerLauncher
 import com.preat.peekaboo.image.picker.toImageBitmap
@@ -44,9 +46,15 @@ fun meter(driver: String?, navController: NavController) {
     ) {
 
 
+        fun NavHostController.navigateToLogin() {
+            val options = NavOptions.Builder()
+                .setPopUpTo(Screens.Login, inclusive = true) // Remove Login screen from back stack
+                .build()
 
+            this.navigate("${Screens.Login}", options)
+        }
 
-meter_caller(loading) {
+meter_caller(loading,snackbarHostState) {
     loading = true
     scope.launch {
       if(it.meter.isNullOrEmpty()){
@@ -76,7 +84,15 @@ meter_caller(loading) {
                   loading = true
                   scope.launch {
                       snackbarHostState.showSnackbar("Data sent Successfully")
-                      navController.popBackStack()
+                      val options = NavOptions.Builder()
+                          .setPopUpTo("${Screens.Precheck}?driver=$driver", inclusive = true) // Clear the entire back stack
+                          .build()
+
+
+
+                      navController.navigate(Screens.Login,options)
+
+
                   }
               }
           }
@@ -90,13 +106,15 @@ meter_caller(loading) {
     }
     SnackbarHost(hostState = snackbarHostState)
 }
+
     @Serializable
     data class imagedata(val meter:String,val image:ByteArray)
 @Composable
-fun meter_caller(loading:Boolean,meterread:(reading:imagedata)->Unit){
+fun meter_caller(loading:Boolean,snackbarHostState: SnackbarHostState,meterread:(reading:imagedata)->Unit){
+
     var meterReading by remember { mutableStateOf("") }
     var image by remember { mutableStateOf<ByteArray?>(null) }
-
+    val scope= rememberCoroutineScope()
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -162,8 +180,14 @@ fun meter_caller(loading:Boolean,meterread:(reading:imagedata)->Unit){
                     Button(
                         onClick = {
                             val log = logging("KMLogging Tag")
-                            log.e { "${meterReading}" }
-                            meterread(imagedata(meterReading, image!!))
+
+                            if(meterReading.isNullOrEmpty()){
+                                scope.launch {  snackbarHostState.showSnackbar("Please enter meter reading") }
+
+                            }
+                            else{
+                                log.e { "${meterReading}" }
+                            meterread(imagedata(meterReading, image!!))}
                         },
                         modifier = Modifier
                             .fillMaxWidth()

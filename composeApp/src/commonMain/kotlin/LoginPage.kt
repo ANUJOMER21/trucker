@@ -20,9 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Brush
-import androidx.navigation.NavOptions
-import com.example.cmppreference.LocalPreference
-import com.russhwolf.settings.Settings
+
 import viewmodel.LoginHandler
 
 @Composable
@@ -158,7 +156,6 @@ fun LoginScreen(navController: NavHostController) {
                                     else{
                                         coroutineScope.launch {
                                             navController.navigateToPrecheck(driverId = result!!.driver.id)
-
 
                                         /*   // snackbarHostState.showSnackbar(result)
                                             navController.navigate(Screens.Precheck+"?driver=${result!!.driver.id}")
