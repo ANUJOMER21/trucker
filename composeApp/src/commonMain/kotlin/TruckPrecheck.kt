@@ -247,29 +247,28 @@ fun InspectionItemRow(
     var expanded by remember { mutableStateOf(false) }
     var selectedStatus by remember { mutableStateOf(item.status) }
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.Start
     ) {
         Text(
             text = item.name,
-            modifier = Modifier.weight(1f),
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(bottom = 8.dp),
+          /*  maxLines = 2,
+            overflow = TextOverflow.Ellipsis,*/
             fontWeight = FontWeight.Bold,
             fontSize = 16.sp
         )
 
         Box(
-            modifier = Modifier
-                .wrapContentSize(Alignment.TopStart)
+            modifier = Modifier.wrapContentSize(Alignment.TopStart)
         ) {
             OutlinedButton(
                 onClick = { expanded = true },
-                modifier = Modifier.width(100.dp),
+                modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
                 border = BorderStroke(1.dp, Color.Blue)
             ) {
@@ -281,7 +280,7 @@ fun InspectionItemRow(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
                 modifier = Modifier
-                    .width(100.dp)
+                    .fillMaxWidth()
                     .zIndex(1f) // Ensure the dropdown is on top of other content
             ) {
                 InspectionStatus.values().forEach { status ->
@@ -299,4 +298,5 @@ fun InspectionItemRow(
         }
     }
 }
+
 
