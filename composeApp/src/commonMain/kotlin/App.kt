@@ -1,12 +1,14 @@
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import androidx.navigation.NavType
@@ -52,6 +54,9 @@ fun AppNavigation(navController: NavHostController,driver:(driverid:String)->Uni
         composable(route = Screens.Login) {
             LoginScreen(navController = navController)
         }
+        composable(route=Screens.Admin){
+                AdminPanel()
+        }
         composable(route =Screens.imagepick){
             imagepick()
         }
@@ -91,6 +96,12 @@ fun AppNavigation(navController: NavHostController,driver:(driverid:String)->Uni
     }
 }
 
+
+@Composable
+fun AdminPanel() {
+
+}
+
 @Composable
 fun DeliveryImage() {
     Image(
@@ -114,4 +125,5 @@ object Screens {
     const val TruckPrecheck = "truckprecheck"
     const val TrailerPrecheck = "trailerprecheck"
     const val meter = "meter"
+    const val Admin="Admin"
 }

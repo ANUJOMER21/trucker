@@ -7,7 +7,8 @@ enum class Api(val url:String) {
     Trailer_precheck("${Baseurl}trailer_precheck.php"),
     CheckData("${Baseurl}precheck_status.php"),
     EndTrip("${Baseurl}end_date.php"),
-    Location("${Baseurl}submit_location.php")
+    Location("${Baseurl}submit_location.php"),
+    Admin("https://works.diginspire.in/driverapp/admin.php")
 
 }
 val Baseurl="https://works.diginspire.in/driverapp/api/"

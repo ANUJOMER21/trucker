@@ -17,8 +17,9 @@ import org.lighthousegames.logging.Log
 class LocationWorker(val context: Context, params: WorkerParameters) : Worker(context, params) {
 
     override fun doWork(): Result {
-        val driverId = inputData.getString("driverId") ?: return Result.failure()
 
+        val sharedPref = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        val driverId = sharedPref.getString("driver","0")
         // Get location
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(applicationContext)
         if (ActivityCompat.checkSelfPermission(
@@ -37,7 +38,7 @@ class LocationWorker(val context: Context, params: WorkerParameters) : Worker(co
         locationTask.addOnSuccessListener(OnSuccessListener { location ->
             if (location != null) {
                 // Send location and driverId to the server
-                runBlocking {   sendLocationToServer(driverId, location.latitude, location.longitude)}
+                runBlocking {   sendLocationToServer(driverId!!, location.latitude, location.longitude)}
 
             }
         })
@@ -51,8 +52,11 @@ class LocationWorker(val context: Context, params: WorkerParameters) : Worker(co
 
     private suspend fun sendLocationToServer(driverId: String, latitude: Double, longitude: Double) {
         // Your implementation to send location data to the server
-       val res= Api.ApiClient().sendlocation(driverId,latitude.toString(),longitude.toString())
-        Log.d("sendLocationToServer", res.toString())
+        if(!driverId.equals("0")){
+            val res= Api.ApiClient().sendlocation(driverId,latitude.toString(),longitude.toString())
+            Log.d("sendLocationToServer","$driverId"+ res.toString())
+
+        }
 
     }
 }

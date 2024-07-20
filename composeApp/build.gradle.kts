@@ -44,6 +44,11 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kotlinx.coroutines.android)
+            implementation ("androidx.compose.ui:ui:1.3.0")
+
+            implementation ("androidx.compose.ui:ui-tooling-preview:1.3.0")
+            implementation ("androidx.compose.runtime:runtime-livedata:1.3.0")
+            implementation ("androidx.compose.runtime:runtime-rxjava2:1.3.0")
 
             implementation ("com.google.android.gms:play-services-location:18.0.0")// or the latest version
 
@@ -141,6 +146,7 @@ android {
 dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.androidx.ui.android)
 }
 
 compose.desktop {
