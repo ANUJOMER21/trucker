@@ -23,7 +23,7 @@ import trucker.composeapp.generated.resources.Res
 import trucker.composeapp.generated.resources.truck2
 
 @Composable
-fun App(driver:(driverId:String)->Unit) {
+fun App(driverid:String,driver: (driverid:String)->Unit) {
     MaterialTheme {
 
 
@@ -34,8 +34,8 @@ fun App(driver:(driverId:String)->Unit) {
 
 
         val navController = rememberNavController()
-        AppNavigation(navController = navController){
-driver(it)
+        AppNavigation(driverid,navController = navController){
+                        driver(it)
         }
     }
 }
@@ -47,51 +47,61 @@ fun NavHostController.navigateToPrecheck(driverId: String) {
     this.navigate("${Screens.Precheck}?driver=$driverId", options)
 }
 @Composable
-fun AppNavigation(navController: NavHostController,driver:(driverid:String)->Unit) {
-    val driverid by remember { mutableStateOf("0") }
-    driver(driverid)
+fun AppNavigation(
+    driverid: String,
+    navController: NavHostController,
+    driver: (driverid: String) -> Unit
+) {
+    // Logging setup
+
+
+    // Navigation setup
     NavHost(navController = navController, startDestination = Screens.Login) {
         composable(route = Screens.Login) {
-            LoginScreen(navController = navController)
+            LoginScreen(driverid,navController = navController)
         }
-        composable(route=Screens.Admin){
-                AdminPanel()
+        composable(route = Screens.Admin) {
+            AdminPanel()
         }
-        composable(route =Screens.imagepick){
+        composable(route = Screens.imagepick) {
             imagepick()
         }
-
         composable(
             route = Screens.Precheck + "?driver={driver}",
             arguments = listOf(navArgument("driver") { type = NavType.StringType })
         ) { backStackEntry ->
             val driver = backStackEntry.arguments?.getString("driver")
-            driver(driver!!)
-            Precheck(driver, navController)
+            driver?.let {
+                driver(it)
+                Precheck(it, navController)
+            }
         }
-
         composable(
             route = Screens.TruckPrecheck + "?driver={driver}",
             arguments = listOf(navArgument("driver") { type = NavType.StringType })
         ) { backStackEntry ->
             val driver = backStackEntry.arguments?.getString("driver")
-            TruckPrecheck(driver, navController)
+            driver?.let {
+                TruckPrecheck(it, navController)
+            }
         }
-
         composable(
             route = Screens.TrailerPrecheck + "?driver={driver}",
             arguments = listOf(navArgument("driver") { type = NavType.StringType })
         ) { backStackEntry ->
             val driver = backStackEntry.arguments?.getString("driver")
-            TrailerPrecheck(driver, navController)
+            driver?.let {
+                TrailerPrecheck(it, navController)
+            }
         }
-
-        composable(route = Screens.meter+ "?driver={driver}",
-                arguments = listOf(navArgument("driver") { type = NavType.StringType }) )
-        {
-                        backStackEntry ->
-                    val driver = backStackEntry.arguments?.getString("driver")
-            meter(driver,navController)
+        composable(
+            route = Screens.meter + "?driver={driver}",
+            arguments = listOf(navArgument("driver") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val driver = backStackEntry.arguments?.getString("driver")
+            driver?.let {
+                meter(it, navController)
+            }
         }
     }
 }

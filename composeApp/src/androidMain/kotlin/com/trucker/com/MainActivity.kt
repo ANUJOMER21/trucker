@@ -1,7 +1,6 @@
 package com.trucker.com
 
 import Api.Api
-import Api.ApiClient
 import App
 import DeliveryImage
 import android.content.Context
@@ -26,39 +25,19 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.SnackbarHost
-import androidx.compose.material.SnackbarHostState
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextFieldDefaults
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Phone
-import androidx.compose.material.icons.outlined.Lock
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -207,15 +186,16 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Appscreen(){
-        var driverid:String =""
-        App(){
+
+        val sharedPref = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+        var driverid:String? =sharedPref.getString("driver","0")
+        App(driverid!!){
             Log.d("driverid",it)
             driverid=it
-            val sharedPref = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+
             //scheduleLocationWork(applicationContext, "$driverid")
             val editor = sharedPref.edit()
             editor.putString("driver", "$driverid")
-
             editor.apply()
 
             //   scheduleLocationWork(applicationContext, "$driverid")

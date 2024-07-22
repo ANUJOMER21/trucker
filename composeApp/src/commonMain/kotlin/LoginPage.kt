@@ -24,7 +24,7 @@ import androidx.compose.ui.graphics.Brush
 import viewmodel.LoginHandler
 
 @Composable
-fun LoginScreen(navController: NavHostController) {
+fun LoginScreen(driver:String,navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     /*val preference = LocalPreference.current
     preference.put("login", "result")*/
@@ -36,7 +36,11 @@ fun LoginScreen(navController: NavHostController) {
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
     val grey = Color(245, 245, 245)
-
+    if(!driver.equals("0")){
+        coroutineScope.launch {
+            jumptoprechek(driver,navController)
+        }
+    }
     LaunchedEffect(email, password) {
         if (email.length > 10) {
             coroutineScope.launch {
@@ -155,8 +159,7 @@ fun LoginScreen(navController: NavHostController) {
                                     }
                                     else{
                                         coroutineScope.launch {
-                                            navController.navigateToPrecheck(driverId = result!!.driver.id)
-
+                                            jumptoprechek(result!!.driver.id,navController)
                                         /*   // snackbarHostState.showSnackbar(result)
                                             navController.navigate(Screens.Precheck+"?driver=${result!!.driver.id}")
                                             navController.rem*/
@@ -188,7 +191,10 @@ fun LoginScreen(navController: NavHostController) {
         SnackbarHost(hostState = snackbarHostState)
     }
 }
+suspend fun jumptoprechek(driver: String,navController:NavHostController){
+    navController.navigateToPrecheck(driverId = driver)
 
+}
 @Composable
 fun OutlinedTextFieldBackground(
     color: Color,
