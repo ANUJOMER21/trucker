@@ -29,8 +29,6 @@ val singleImagePicker = rememberImagePickerLauncher(
             val log = logging("submit Tag")
             log.d { base64 }
 
-            // Process the selected images' ByteArrays.
-
 
         }
     }

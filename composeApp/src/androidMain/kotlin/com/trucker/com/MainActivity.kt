@@ -2,9 +2,11 @@ package com.trucker.com
 
 import Api.Api
 import App
+import mainpage
 import DeliveryImage
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -54,31 +56,15 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import viewmodel.LoginHandler
 import java.util.concurrent.TimeUnit
-
+sealed class Screen {
+    object Home : Screen()
+    object Admin : Screen()
+    object Driver : Screen()
+}
 class MainActivity : ComponentActivity() {
     // In your Activity or Fragment
     private val LOCATION_PERMISSION_REQUEST_CODE = 1000
-    fun scheduleLocationWork(context: Context, driverId: String) {
-        val data = Data.Builder()
-            .putString("driverId", driverId)
-            .build()
 
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .setRequiresBatteryNotLow(true)
-            .build()
-
-        val locationWorkRequest = PeriodicWorkRequestBuilder<LocationWorker>(5, TimeUnit.MINUTES)
-            .setInputData(data)
-            .setConstraints(constraints)
-            .build()
-
-        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
-            "LocationWork",
-            ExistingPeriodicWorkPolicy.REPLACE,
-            locationWorkRequest
-        )
-    }
 
     private fun checkLocationPermissions() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
@@ -104,80 +90,74 @@ class MainActivity : ComponentActivity() {
         }
     }
     @Composable
-    fun WebviewScreen() {
-        val adminpanel = remember { mutableStateOf(false) }
-        val loginpanel = remember { mutableStateOf(false) }
-
-        if (adminpanel.value) {
-            Adminpanel()
-        } else if (loginpanel.value) {
-            Appscreen()
-        } else {
-            val gradientBrush = Brush.verticalGradient(
-                colors = listOf(
-                    Color(3, 17, 79, 255),
-                    Color(2, 69, 140, 255)
-                )
+    fun HomeScreen(onAdminLogin: () -> Unit, onDriverLogin: () -> Unit) {
+        val gradientBrush = Brush.verticalGradient(
+            colors = listOf(
+                Color(252,163,17,255),
+                Color(252,163,17,255),
             )
+        )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(brush = gradientBrush),
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(brush = gradientBrush),
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top,
+                modifier = Modifier.fillMaxHeight()
             ) {
+                // DeliveryImage at the top
+                DeliveryImage()
+                Spacer(modifier = Modifier.height(50.dp))
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Top,
-                    modifier = Modifier.fillMaxHeight()
+                    verticalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(16.dp)
                 ) {
-                    // DeliveryImage at the top
-                    DeliveryImage()
-                    Spacer(modifier = Modifier.height(50.dp))
+                    Text(
+                        text = "Welcome",
+                        color = Color.White,
+                        style = MaterialTheme.typography.h4,
+                        fontWeight = FontWeight.Normal
+                    )
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "Welcome",
-                            color = Color.White,
-                            style = MaterialTheme.typography.h4,
-                            fontWeight = FontWeight.Normal
-                        )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                    LoginButton(text = "Admin Login", onClick = onAdminLogin)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    LoginButton(text = "Driver Login", onClick = onDriverLogin)
 
-                        Button(
-                            onClick = {
-                                adminpanel.value = true
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(4, 117, 255, 255))
-                        ) {
-                            Text(text = "Admin Login", color = Color.White)
-                        }
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = {
-                                loginpanel.value = true
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp),
-                            shape = RoundedCornerShape(10.dp),
-                            colors = ButtonDefaults.buttonColors(backgroundColor = Color(4, 117, 255, 255))
-                        ) {
-                            Text(text = "Driver Login", color = Color.White)
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
+        }
+    }
+
+    @Composable
+    fun LoginButton(text: String, onClick: () -> Unit) {
+        Button(
+            onClick = onClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(10.dp),
+            colors = ButtonDefaults.buttonColors(backgroundColor = Color(0, 18, 68, 255))
+        ) {
+            Text(text = text, color = Color.White)
+        }
+    }
+
+    @Composable
+    fun WebviewScreen() {
+        val (currentScreen, setCurrentScreen) = remember { mutableStateOf<Screen>(Screen.Home) }
+
+        when (currentScreen) {
+            is Screen.Admin -> Adminpanel()
+            is Screen.Driver -> Appscreen()
+            is Screen.Home -> HomeScreen(onAdminLogin = { setCurrentScreen(Screen.Admin) }, onDriverLogin = { setCurrentScreen(Screen.Driver) })
         }
     }
 
@@ -186,20 +166,17 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun Appscreen(){
-
-        val sharedPref = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-        var driverid:String? =sharedPref.getString("driver","0")
-        App(driverid!!){
-            Log.d("driverid",it)
-            driverid=it
-
-            //scheduleLocationWork(applicationContext, "$driverid")
-            val editor = sharedPref.edit()
-            editor.putString("driver", "$driverid")
+        val sharedPreferences = getSharedPreferences("MyPreferences", Context.MODE_PRIVATE)
+        val driverid = sharedPreferences.getString("driverid", "0")
+        Log.d("old driverid___",driverid!!)
+        mainpage(driverid_ = driverid!! ){
+            Log.d("saved driverid___",it)
+            val editor = sharedPreferences.edit()
+            editor.putString("driverid", "$it")
             editor.apply()
 
-            //   scheduleLocationWork(applicationContext, "$driverid")
         }
+
     }
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {

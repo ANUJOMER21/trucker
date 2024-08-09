@@ -3,8 +3,6 @@ package viewmodel
 import Api.Api
 import Api.ApiClient
 import InspectionItem
-import com.example.cmppreference.LocalPreference
-import io.ktor.util.logging.Logger
 import kotlinx.datetime.Clock
 import org.lighthousegames.logging.logging
 
@@ -31,7 +29,7 @@ class  LoginHandler {
     }
 
 
-    suspend fun sendTruckData(driverId:String,InspectionList:List<InspectionItem>,image:ByteArray,MeterReading:String,
+    suspend fun sendTruckData(driverId:String,InspectionList:List<InspectionItem>,image:ByteArray,MeterReading:String,remark:String,
                               response:(res: message?,failed:Boolean)->Unit){
         val log = logging("sendTruckData")
         try {
@@ -48,7 +46,8 @@ class  LoginHandler {
                 meterReading = MeterReading,
                 precheckItems = list as List<ApiClient.PrecheckItem>,
                 imageUpload = image,
-                date = nowUnixtime
+                date = nowUnixtime,
+                remark=remark
 
             )
             log.d { res}
@@ -67,6 +66,48 @@ class  LoginHandler {
         }
 
 
+    }
+    suspend fun gethistory(driverId: String,response: (res: HistoryModel?, failed: Boolean) -> Unit){
+        val log = logging("sendendtrip")
+        try {
+
+            val res=ApiClient().getweekhistoru(driverId)
+            log.d { res }
+
+            if(res==null){
+                response(null,true)
+            }
+            else{
+                response(res,false)
+            }
+
+
+        }
+        catch (e:Exception){
+            log.d { e.toString() }
+            response(null,true)
+        }
+    }
+    suspend fun getprofile(driverId: String,response: (res: profilemodel?, failed: Boolean) -> Unit){
+        val log = logging("sendendtrip")
+        try {
+
+            val res=ApiClient().profile(driverId)
+            log.d { res }
+
+            if(res==null){
+                response(null,true)
+            }
+            else{
+                response(res,false)
+            }
+
+
+        }
+        catch (e:Exception){
+            log.d { e.toString() }
+            response(null,true)
+        }
     }
     suspend fun sendendtrip(driverId: String,MeterReading: String,image: ByteArray,response:(res: endtripmodel?,failed:Boolean)->Unit){
         val log = logging("sendendtrip")

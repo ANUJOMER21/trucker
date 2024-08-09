@@ -1,5 +1,5 @@
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -8,14 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -23,35 +16,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
-import org.lighthousegames.logging.logging
 import kotlinx.coroutines.launch
 import viewmodel.LoginHandler
 
 @Composable
 fun TruckPrecheck(driver: String?, navController: NavController) {
-    var checklist by remember { mutableStateOf<List<InspectionItem>?>(trucprecheckItems) }
+    var checklist by remember { mutableStateOf(trucprecheckItems) }
     var meter by remember { mutableStateOf(false) }
-    var updatedChecklist by remember { mutableStateOf(checklist) }
 
-    // Example functions to handle actions
-    val showMeter: (Boolean) -> Unit = { isMeterShown ->
-        meter = isMeterShown
-    }
-
-    val onSubmit: (List<InspectionItem>) -> Unit = { updatedItems ->
-        // Handle updated items, e.g., save to database or perform further actions
-        updatedChecklist = updatedItems
-    }
-
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(
-            Color(3, 17, 79, 255),
-            Color(2, 69, 140, 255)
+            Color(252, 163, 17, 255),
+            Color(252, 163, 17, 255),
         )
     )
 
@@ -59,7 +40,7 @@ fun TruckPrecheck(driver: String?, navController: NavController) {
         modifier = Modifier
             .fillMaxSize()
             .background(gradientBrush)
-            .padding(16.dp),
+            .padding(8.dp),
         contentAlignment = Alignment.Center
     ) {
         Card(
@@ -71,80 +52,137 @@ fun TruckPrecheck(driver: String?, navController: NavController) {
                 Column(
                     verticalArrangement = Arrangement.Center,
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.padding(8.dp)
+                    modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
                         text = "Truck Pre Check",
                         fontSize = 24.sp,
                         color = Color.Black,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(8.dp)
+                        fontWeight = FontWeight.SemiBold
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
+                    Column(
+                        modifier = Modifier.weight(1f) // This will make the LazyColumn take only available space
+                    ) {
+                        InspectionChecklistScreen(
+                            checklist = checklist,
+                            onStatusChange = { updatedItems ->
+                                checklist = updatedItems
 
-                    InspectionChecklistScreen(checklist ?: emptyList(), showMeter, onSubmit)
+                            }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = {
+
+                                meter = true
+
+
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color(3, 17, 79, 255))
+                    ) {
+                        Text("Submit", color = Color.White)
+                    }
                 }
             } else {
-                ShowMeter(driver!!, updatedChecklist, navController)
+               ShowMeter (driver!!, checklist, navController)
             }
         }
     }
+
+    SnackbarHost(hostState = snackbarHostState)
 }
 
 @Composable
 fun InspectionChecklistScreen(
     checklist: List<InspectionItem>,
-    showMeter: (Boolean) -> Unit,
-    onSubmit: (updated: List<InspectionItem>) -> Unit
+    onStatusChange: (updated: List<InspectionItem>) -> Unit
 ) {
-    var updatedChecklist by remember { mutableStateOf<List<InspectionItem>?>(null) }
-
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.SpaceBetween
     ) {
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(checklist) { item ->
-                InspectionItemRow(
-                    item = item,
-                    onStatusChange = { newStatus ->
-                        updatedChecklist = checklist.map { if (it == item) it.copy(status = newStatus) else it }
-                        onSubmit(checklist.map { if (it == item) it.copy(status = newStatus) else it })
+        items(checklist) { item ->
+            InspectionItemRow(
+                item = item,
+                onStatusChange = { newStatus ->
+                    val updatedChecklist = checklist.map {
+                        if (it == item) it.copy(status = newStatus) else it
                     }
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-            }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Button(
-            onClick = {
-                showMeter(true)
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-                .height(48.dp),
-            shape = RoundedCornerShape(10.dp),
-            colors = ButtonDefaults.buttonColors(backgroundColor = Color(3, 17, 79, 255))
-        ) {
-            Text("Submit", color = Color.White)
+                    onStatusChange(updatedChecklist)
+                }
+            )
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
 
 @Composable
+fun InspectionItemRow(
+    item: InspectionItem,
+    onStatusChange: (InspectionStatus) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 16.dp)
+    ) {
+        Text(
+            text = item.name,
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            InspectionStatus.values().forEach { status ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clickable { onStatusChange(status) }
+                        .padding(horizontal = 8.dp)
+                ) {
+                    Checkbox(
+                        checked = item.status == status,
+                        onCheckedChange = { isChecked ->
+                            if (isChecked) {
+                                onStatusChange(status)
+                            }
+                        }
+                    )
+                    Text(text = status.name, modifier = Modifier.padding(start = 4.dp))
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
 fun ShowMeter(driver: String, updatedChecklist: List<InspectionItem>?, navController: NavController) {
     var image by remember { mutableStateOf<ByteArray?>(null) }
     var meterReading by remember { mutableStateOf("") }
+    var Remark by remember { mutableStateOf("") }
     var loading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-
+    var showdialog by remember{ mutableStateOf(false) }
     if (loading) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -156,14 +194,17 @@ fun ShowMeter(driver: String, updatedChecklist: List<InspectionItem>?, navContro
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp)
+                .padding(16.dp)
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.Center
         ) {
-            meter2 {
-                image = it
+            if(showdialog){
+            SuccessDialog(showDialog = true,title="Success", message = "Truck pre check Data sent successfully.", onDismiss = {
+                navController.popBackStack()
+            })
             }
-            Spacer(modifier = Modifier.height(8.dp))
+            meter2 { image = it }
+            Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
                 value = meterReading,
                 onValueChange = { meterReading = it },
@@ -175,7 +216,7 @@ fun ShowMeter(driver: String, updatedChecklist: List<InspectionItem>?, navContro
                 singleLine = true,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(8.dp),
                 shape = RoundedCornerShape(10.dp),
                 colors = TextFieldDefaults.textFieldColors(
                     focusedIndicatorColor = Color.Black,
@@ -183,51 +224,71 @@ fun ShowMeter(driver: String, updatedChecklist: List<InspectionItem>?, navContro
                     cursorColor = Color.Black
                 )
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
+            OutlinedTextField(
+                value = Remark,
+                onValueChange = { Remark = it },
+                label = { Text("Enter Remarks") },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done
+                ),
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                shape = RoundedCornerShape(10.dp),
+                colors = TextFieldDefaults.textFieldColors(
+                    focusedIndicatorColor = Color.Black,
+                    backgroundColor = Color.LightGray.copy(alpha = 0.1f),
+                    cursorColor = Color.Black
+                )
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
             Button(
                 onClick = {
+
                     loading = true
                     scope.launch {
-                        if(meterReading.isNullOrEmpty()){
-                            scope.launch {
-                                loading=false
-                                snackbarHostState.showSnackbar("please enter meter reading")
+                        when {
+                            meterReading.isEmpty() -> {
+                                loading = false
+                                snackbarHostState.showSnackbar("Please enter meter reading")
                             }
-                        }
-                        else if(image!!.isEmpty()){
-                            scope.launch {
-                                loading=false
+                            image == null -> {
+                                loading = false
                                 snackbarHostState.showSnackbar("Please pick meter image")
                             }
-                        }
-                        else {
-                            LoginHandler().sendTruckData(
-                                driverId = driver,
-                                InspectionList = updatedChecklist!!,
-                                image = image!!,
-                                MeterReading = meterReading
-                            ) { result, failed ->
+                            Remark.isEmpty()->{
                                 loading = false
-                                if (failed) {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Failed to Send Data")
-                                    }
-                                } else {
-                                    loading = true
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Data sent Successfully")
-                                        navController.popBackStack()
+                                snackbarHostState.showSnackbar("Please Enter Remark.")
+
+                            }
+                            else -> {
+                                LoginHandler().sendTruckData(
+                                    driverId = driver,
+                                    InspectionList = updatedChecklist!!,
+                                    image = image!!,
+                                    MeterReading = meterReading,
+                                   remark= Remark
+                                ) { result, failed ->
+                                    if (failed) {
+                                        loading = false
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Failed to Send Data")
+                                        }
+                                    } else {
+                                        loading = false
+                                        showdialog=true
                                     }
                                 }
                             }
                         }
-                        val log = logging("submit Tag")
-                        log.d { "meter: $meterReading" }
                     }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(8.dp)
                     .height(48.dp),
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(backgroundColor = Color(3, 17, 79, 255))
@@ -236,67 +297,17 @@ fun ShowMeter(driver: String, updatedChecklist: List<InspectionItem>?, navContro
             }
         }
     }
-    SnackbarHost(hostState = snackbarHostState)
-}
-
-@Composable
-fun InspectionItemRow(
-    item: InspectionItem,
-    onStatusChange: (InspectionStatus) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    var selectedStatus by remember { mutableStateOf(item.status) }
-
-    Column(
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(4.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.Start
+            .fillMaxSize()
+            .padding(5.dp)
     ) {
-        Text(
-            text = item.name,
-            modifier = Modifier.padding(bottom = 8.dp),
-          /*  maxLines = 2,
-            overflow = TextOverflow.Ellipsis,*/
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
         )
-
-        Box(
-            modifier = Modifier.wrapContentSize(Alignment.TopStart)
-        ) {
-            OutlinedButton(
-                onClick = { expanded = true },
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.Blue),
-                border = BorderStroke(1.dp, Color.Blue)
-            ) {
-                Text(text = selectedStatus.name)
-                Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Dropdown")
-            }
-
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .zIndex(1f) // Ensure the dropdown is on top of other content
-            ) {
-                InspectionStatus.values().forEach { status ->
-                    DropdownMenuItem(
-                        onClick = {
-                            selectedStatus = status
-                            onStatusChange(status)
-                            expanded = false
-                        }
-                    ) {
-                        Text(text = status.name)
-                    }
-                }
-            }
-        }
     }
 }
+
 
 

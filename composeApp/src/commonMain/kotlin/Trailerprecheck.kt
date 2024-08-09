@@ -44,6 +44,7 @@ fun TrailerPrecheck(driver: String?, navController: NavController){
     var updatedChecklist by remember { mutableStateOf(checklist) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    var showdialog by remember{ mutableStateOf(false)}
     // Example functions to handle actions
     val showMeter: (Boolean) -> Unit = { isMeterShown ->
         meter=isMeterShown
@@ -67,10 +68,7 @@ fun TrailerPrecheck(driver: String?, navController: NavController){
                }
                else {
                    loading = true
-                   scope.launch {
-                       snackbarHostState.showSnackbar("Data send Successfully")
-                       navController.popBackStack()
-                   }
+                    showdialog=true
                }
            }
        }
@@ -81,8 +79,8 @@ fun TrailerPrecheck(driver: String?, navController: NavController){
 
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(
-            Color(3, 17, 79, 255),
-            Color(2, 69, 140, 255)
+            Color(252,163,17,255),
+            Color(252,163,17,255),
         )
     )
 
@@ -97,8 +95,13 @@ fun TrailerPrecheck(driver: String?, navController: NavController){
                 verticalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(8.dp)
             ) {
+                if(showdialog){
+                    SuccessDialog(showDialog = true,title="Success", message = "Trailer pre check Data sent successfully.", onDismiss = {
+                        navController.popBackStack()
+                    })
+                }
                 Card(
                     modifier = Modifier
                         .wrapContentWidth(),
@@ -135,9 +138,19 @@ fun TrailerPrecheck(driver: String?, navController: NavController){
 
 
             }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(5.dp)
+                ) {
+                    SnackbarHost(
+                        hostState = snackbarHostState,
+                        modifier = Modifier.align(Alignment.BottomCenter)
+                    )
+                }
         }
     }
-    SnackbarHost(hostState = snackbarHostState)
+
 }
 @Composable
 fun TrailerInspectionChecklistScreen(
@@ -172,13 +185,14 @@ fun TrailerInspectionChecklistScreen(
 
         Button(
             onClick = {
-                onSubmit(updatedChecklist!!)
+                onSubmit(updatedChecklist ?: checklist)
+
 
 
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(4.dp)
                 .height(48.dp),
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(backgroundColor = Color(3, 17, 79, 255))

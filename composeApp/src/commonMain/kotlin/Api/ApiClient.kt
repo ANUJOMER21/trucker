@@ -4,8 +4,6 @@ package Api
 
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.plugins.ClientRequestException
-import io.ktor.client.plugins.ServerResponseException
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.client.plugins.logging.*
 import io.ktor.client.request.*
@@ -13,7 +11,6 @@ import io.ktor.client.request.forms.MultiPartFormDataContent
 import io.ktor.client.request.forms.formData
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import io.ktor.client.statement.readText
 import io.ktor.http.ContentType
 import io.ktor.http.Headers
 import io.ktor.http.HttpHeaders
@@ -25,14 +22,15 @@ import io.ktor.utils.io.errors.IOException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.lighthousegames.logging.logging
+import viewmodel.HistoryModel
 import viewmodel.checkdata
 import viewmodel.endtripmodel
 import viewmodel.loginmodel
 import viewmodel.message
+import viewmodel.profilemodel
 import viewmodel.trailer_model
 
 
@@ -85,7 +83,27 @@ class ApiClient {
 
 
     }
-@OptIn(InternalAPI::class)
+    @OptIn(InternalAPI::class)
+suspend fun getweekhistoru(driverId: String):HistoryModel?
+{
+return  withContext(Dispatchers.Default){
+    try {
+        val response:HttpResponse=client.get(Api.History.url+"?driver_id=$driverId")
+        {
+            method=HttpMethod.Get
+        }
+        Json.decodeFromString<HistoryModel>(response.bodyAsText())
+    }
+    catch (e:Exception){
+        val log = logging("sendTrailerData1")
+        log.d { e.toString() }
+        e.printStackTrace()
+
+        null
+    }
+}
+}
+    @OptIn(InternalAPI::class)
 suspend fun postTrailerCheckData(
     trailerModel: trailer_model
 ):message?{
@@ -117,7 +135,8 @@ val response:HttpResponse=client.post(Api.Trailer_precheck.url){
         meterReading: String,
         date: String,
         precheckItems: List<PrecheckItem>,
-        imageUpload: ByteArray? = null
+        imageUpload: ByteArray? = null,
+        remark: String
     ): message? {
 
         return withContext(Dispatchers.Default) {
@@ -129,18 +148,19 @@ val response:HttpResponse=client.post(Api.Trailer_precheck.url){
                         append("driver_id", driverId)
                         append("meter_reading", meterReading)
                         append("date", date)
+                        append("remark",remark)
 
                         precheckItems.forEachIndexed { index, item ->
                             append("precheck_items[$index][item_name]", item.item_name)
                             append("precheck_items[$index][status]", item.status)
                         }
 
-                   /*     imageUpload?.let {
+                        imageUpload?.let {
                             append("image_upload", it, Headers.build {
                                 append(HttpHeaders.ContentType, "image/jpeg")
                                 append(HttpHeaders.ContentDisposition, "filename=image.jpg")
                             })
-                        }*/
+                        }
                     }
                 )
 
@@ -161,7 +181,25 @@ val response:HttpResponse=client.post(Api.Trailer_precheck.url){
             }
         }
     }
+    suspend fun profile(driverId: String):profilemodel?{
+        return withContext(Dispatchers.Default){
+            try {
+                val response:HttpResponse=client.get(Api.Profile.url+"?driver_id=$driverId"){
+                    method=HttpMethod.Get
+                }
+                val responseBody = response.bodyAsText()
+                println("Response Body: $responseBody")
 
+                Json { ignoreUnknownKeys = true }.decodeFromString<profilemodel>(responseBody)
+            }
+            catch (e:Exception){
+                val log = logging("sendTruckDataIOException")
+                log.d { e.toString() }
+                e.printStackTrace()
+                null
+            }
+        }
+    }
     @OptIn(InternalAPI::class)
     suspend fun endtrip(
         driverId: String,

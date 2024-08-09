@@ -32,10 +32,11 @@ fun meter(driver: String?, navController: NavController) {
     var loading by remember { mutableStateOf(false) }
     val scope= rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
+    var showdialog by remember{ mutableStateOf(false)}
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(
-            Color(3, 17, 79, 255),
-            Color(2, 69, 140, 255)
+            Color(252,163,17,255),
+            Color(252,163,17,255),
         )
     )
 
@@ -44,15 +45,13 @@ fun meter(driver: String?, navController: NavController) {
             .fillMaxSize()
             .background(gradientBrush)
     ) {
-
-
-        fun NavHostController.navigateToLogin() {
-            val options = NavOptions.Builder()
-                .setPopUpTo(Screens.Login, inclusive = true) // Remove Login screen from back stack
-                .build()
-
-            this.navigate("${Screens.Login}", options)
+        if(showdialog){
+            SuccessDialog(showDialog = true,title="Success", message = "meter Data is send succesfully", onDismiss = {
+                navController.popBackStack()
+            })
         }
+
+
 
 meter_caller(loading,snackbarHostState) {
     loading = true
@@ -82,18 +81,7 @@ meter_caller(loading,snackbarHostState) {
                   }
               } else {
                   loading = true
-                  scope.launch {
-                      snackbarHostState.showSnackbar("Data sent Successfully")
-                      val options = NavOptions.Builder()
-                          .setPopUpTo("${Screens.Precheck}?driver=$driver", inclusive = true) // Clear the entire back stack
-                          .build()
-
-
-
-                      navController.navigate(Screens.Login,options)
-
-
-                  }
+                  showdialog=true
               }
           }
       }
@@ -122,6 +110,7 @@ fun meter_caller(loading:Boolean,snackbarHostState: SnackbarHostState,meterread:
             .fillMaxSize()
             .padding(16.dp)
     ) {
+
         Card(
             modifier = Modifier.wrapContentWidth(),
             elevation = 1.dp,
@@ -132,13 +121,13 @@ fun meter_caller(loading:Boolean,snackbarHostState: SnackbarHostState,meterread:
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Please enter meter reading",
+                    text = "Meter Reading",
                     fontSize = 24.sp,
                     color = Color.Black,
                     modifier = Modifier.padding(8.dp)
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 if (loading) {
                     Box(
                         modifier = Modifier.fillMaxSize(),
@@ -153,7 +142,7 @@ fun meter_caller(loading:Boolean,snackbarHostState: SnackbarHostState,meterread:
 
 
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     OutlinedTextField(
                         value = meterReading,
@@ -175,7 +164,7 @@ fun meter_caller(loading:Boolean,snackbarHostState: SnackbarHostState,meterread:
                             cursorColor = Color.Black
                         )
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
 
                     Button(
                         onClick = {
@@ -184,6 +173,12 @@ fun meter_caller(loading:Boolean,snackbarHostState: SnackbarHostState,meterread:
                             if(meterReading.isNullOrEmpty()){
                                 scope.launch {  snackbarHostState.showSnackbar("Please enter meter reading") }
 
+                            }
+                            else if(image == null || image!!.isEmpty()){
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("Please enter meter image")
+
+                                }
                             }
                             else{
                                 log.e { "${meterReading}" }
@@ -196,12 +191,7 @@ fun meter_caller(loading:Boolean,snackbarHostState: SnackbarHostState,meterread:
                         shape = RoundedCornerShape(10.dp),
 
                         colors = ButtonDefaults.buttonColors(
-                            backgroundColor = Color(
-                                4,
-                                117,
-                                255,
-                                255
-                            )
+                            backgroundColor =Color(3, 17, 79, 255)
                         )
 
                     ) {
@@ -253,8 +243,8 @@ fun meter2(imagebase:(image:ByteArray)->Unit) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
-            elevation = 8.dp,
+                .padding(0.dp),
+            elevation = 0.dp,
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(
@@ -280,7 +270,7 @@ fun meter2(imagebase:(image:ByteArray)->Unit) {
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
                     onClick = {
@@ -291,7 +281,7 @@ fun meter2(imagebase:(image:ByteArray)->Unit) {
                         .padding(5.dp)
                         .height(48.dp),
                     shape = RoundedCornerShape(10.dp),
-                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(4, 117, 255, 255))
+                    colors = ButtonDefaults.buttonColors(backgroundColor =Color(3, 17, 79, 255))
                 ) {
                     Text("Choose Image", color = Color.White)
                 }
@@ -303,5 +293,3 @@ fun meter2(imagebase:(image:ByteArray)->Unit) {
     }
 }
 
-
-// Function to convert ImageBitmap to Base64 string

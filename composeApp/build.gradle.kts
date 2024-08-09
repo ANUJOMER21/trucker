@@ -45,7 +45,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.kotlinx.coroutines.android)
             implementation ("androidx.compose.ui:ui:1.3.0")
-
+            implementation("network.chaintech:cmp-preference:1.0.0")
             implementation ("androidx.compose.ui:ui-tooling-preview:1.3.0")
             implementation ("androidx.compose.runtime:runtime-livedata:1.3.0")
             implementation ("androidx.compose.runtime:runtime-rxjava2:1.3.0")

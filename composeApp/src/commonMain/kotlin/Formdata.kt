@@ -10,7 +10,7 @@ val trucprecheckItems = listOf(
     InspectionItem("Park brake alarm (check test) Functions when ignition is OFF & ON", InspectionStatus.NO),
     InspectionItem("Drain air tanks (full air and air-over-hydraulic systems only)", InspectionStatus.NO),
     InspectionItem("Visual inspection from rear of vehicle at brake pads to ensure they are appear correctly fitted", InspectionStatus.NO),
-    InspectionItem("Under Bonnet", InspectionStatus.NO),
+    /*InspectionItem("Under Bonnet", InspectionStatus.NO),
     InspectionItem("Engine oil level - also check below vehicle to ensure no oil is leaking.", InspectionStatus.NO),
     InspectionItem("Radiator Coolant level (Engine COLD ONLY)", InspectionStatus.NO),
     InspectionItem("Hose and belts condition", InspectionStatus.NO),
@@ -38,7 +38,7 @@ val trucprecheckItems = listOf(
     InspectionItem("First Aid Kit available and stocked Necessary permits for operation", InspectionStatus.NO),
     InspectionItem("Safety Triangles × 3", InspectionStatus.NO),
     InspectionItem("Overall Observations", InspectionStatus.NO),
-    InspectionItem("Faults or damages to structure/cosmetics", InspectionStatus.NO)
+    InspectionItem("Faults or damages to structure/cosmetics", InspectionStatus.NO)*/
 )
 val trailerinspectionChecklist = listOf(
     InspectionItem("Accreditation Labels - current and legible", InspectionStatus.NO),
