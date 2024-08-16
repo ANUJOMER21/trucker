@@ -67,6 +67,7 @@ class  LoginHandler {
 
 
     }
+
     suspend fun gethistory(driverId: String,response: (res: HistoryModel?, failed: Boolean) -> Unit){
         val log = logging("sendendtrip")
         try {
@@ -143,12 +144,15 @@ class  LoginHandler {
             else{
                 response(
                     precheckstatus(
-                        res.truck_precheck.status=="success" ,
-                        res.precheck_data.status=="error",
-                        res.inspectionItems.status=="success"
+                        res.precheck_data.truck_precheck=="1" ,
+                        res        .inspectionItems.end=="1",
+                        res.truck_precheck.trailer_precheck =="1"
+
                     ),
+
                     false
                 )
+
             }
 
         }
@@ -157,7 +161,28 @@ class  LoginHandler {
             response(null,true)
         }
     }
-    suspend fun sendTrailerdata(driverId: String,InspectionList: List<InspectionItem>,response:(res: message?,failed:Boolean)->Unit){
+    suspend fun ResetData(driverId: String, response: (res: message?, failed: Boolean) -> Unit) {
+        val log = logging("checkstatus")
+        try {
+            val res = ApiClient().postResetData(driverId)
+            log.d { res }
+            if (res == null) {
+                response(null, true)
+            } else {
+                response(res, false)
+            }
+        }
+        catch (e:Exception){
+            log.d { e.toString() }
+            response(null,true)
+        }
+    }
+    suspend fun sendTrailerdata(
+        driverId: String,
+        InspectionList: List<InspectionItem>,
+        Remark:String,
+        response: (res:message?,failed:Boolean)->Unit
+    ){
         val log = logging("sendTrailerData")
         try {
             val list= ArrayList<Inspection>()
@@ -171,7 +196,8 @@ class  LoginHandler {
             }
             val trailerModel=trailer_model(
                 driver_id = driverId,
-                inspection_items = list as List<Inspection>
+                inspection_items = list as List<Inspection>,
+                Remark
 
             )
             val res=ApiClient().postTrailerCheckData(trailerModel)

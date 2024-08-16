@@ -116,7 +116,7 @@ val response:HttpResponse=client.post(Api.Trailer_precheck.url){
     body=jsonPayload
 
 }
-        Json.decodeFromString<message>(response.bodyAsText())
+         Json{ignoreUnknownKeys=true}.decodeFromString<message>(response.bodyAsText())
 
     }
     catch (e:Exception){
@@ -127,6 +127,32 @@ val response:HttpResponse=client.post(Api.Trailer_precheck.url){
         null
     }
 }
+}
+@OptIn(InternalAPI::class)
+suspend fun postResetData(driverId: String):message?{
+    return withContext(Dispatchers.Default){
+        try {
+            val formData = MultiPartFormDataContent(
+                formData {
+                    append("driver_id", driverId)
+                }
+            )
+            val response: HttpResponse = client.post(Api.Reset.url) {
+                method = HttpMethod.Post
+                contentType(ContentType.MultiPart.FormData)
+                body = formData
+            }
+            Json{ignoreUnknownKeys=true}.decodeFromString<message>(response.bodyAsText())
+
+
+        }catch (e:Exception){
+            val log = logging("sendTruckData1")
+            log.d { e.toString() }
+            e.printStackTrace()
+
+            null
+        }
+    }
 }
 
     @OptIn(InternalAPI::class)

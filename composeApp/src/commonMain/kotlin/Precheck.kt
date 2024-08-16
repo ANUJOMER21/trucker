@@ -66,22 +66,32 @@ fun Precheck(driverId: String, navController: NavController) {
     var checkTruckStatus by remember { mutableStateOf(false) }
     var checkTrailerStatus by remember { mutableStateOf(false) }
     var showNextBtn by remember { mutableStateOf(false) }
+    var showNextBtn2 by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+     var resetbtn by remember { mutableStateOf(false) }
 
     LaunchedEffect(driverId) {
         LoginHandler().getPrecheckStatus(driverId) { res, failed ->
+            log.d{
+                "${res.toString()}"
+            }
             if (failed || res == null) {
                 checkTruckStatus = true
                 checkTrailerStatus = true
                 showNextBtn = false
+                showNextBtn2 = false
                 loading = true
+                resetbtn=false
             } else {
                 checkTruckStatus = res.truck
                 checkTrailerStatus = res.inspection
-                showNextBtn = res.endtrip && checkTruckStatus && checkTrailerStatus
+                showNextBtn =
+                    (    checkTruckStatus || checkTrailerStatus) && res.endtrip
+
                 loading = false
+                resetbtn =checkTruckStatus || checkTrailerStatus
             }
         }
     }
@@ -120,7 +130,8 @@ fun Precheck(driverId: String, navController: NavController) {
             } else {
                 if (checkTruckStatus && checkTrailerStatus) {
                     ImageContent("Complete Your Trip", Res.drawable.truck2)
-                } else {
+                }
+                else {
                     Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -152,25 +163,69 @@ fun Precheck(driverId: String, navController: NavController) {
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    if (showNextBtn) {
-                        navController.navigate(Screens.meter)
-                    } else {
+            if(resetbtn) {
+                Button(
+                    onClick = {
                         scope.launch {
-                            snackbarHostState.showSnackbar("Button is not active.")
+                            LoginHandler().ResetData(driverId){
+                                res,failed->
+                                if(failed)
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Failed to reset the data")
+                                    }
+                                else{
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Data is Reset")
+                                        LoginHandler().getPrecheckStatus(driverId) { res, failed ->
+                                            if (failed || res == null) {
+                                                checkTruckStatus = true
+                                                checkTrailerStatus = true
+                                                showNextBtn = false
+                                                loading = true
+                                                resetbtn=false
+                                            } else {
+                                                checkTruckStatus = res.truck
+                                                checkTrailerStatus = res.inspection
+                                                showNextBtn =/* res.endtrip && checkTruckStatus && checkTrailerStatus*/
+                                                    (checkTruckStatus || checkTrailerStatus )&& !res.endtrip
+                                                loading = false
+                                                resetbtn =checkTruckStatus || checkTrailerStatus
+                                            }
+                                        }
+
+                                    }
+                                }
+                            }
+
                         }
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF031151))
-            ) {
-                Text("Go to End the Trip", color = Color.White)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)
+                ) {
+                    Text("Reset Data", color = Color.White)
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
+            if (showNextBtn) {
+                Button(
+                    onClick = {
+                        navController.navigate(Screens.meter)
+
+
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.buttonColors(backgroundColor = Color(0xFF031151))
+                ) {
+                    Text("Go to End the Trip", color = Color.White)
+                }
+            }
+
 
             SnackbarHost(
                 hostState = snackbarHostState,

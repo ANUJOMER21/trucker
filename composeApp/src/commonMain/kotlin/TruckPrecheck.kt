@@ -26,7 +26,7 @@ import viewmodel.LoginHandler
 fun TruckPrecheck(driver: String?, navController: NavController) {
     var checklist by remember { mutableStateOf(trucprecheckItems) }
     var meter by remember { mutableStateOf(false) }
-
+    var Remark by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
     val gradientBrush = Brush.verticalGradient(
@@ -74,13 +74,34 @@ fun TruckPrecheck(driver: String?, navController: NavController) {
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
 
+                    Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = Remark,
+                        onValueChange = { Remark = it },
+                        label = { Text("Enter Remarks") },
+                        singleLine = true,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = TextFieldDefaults.textFieldColors(
+                            focusedIndicatorColor = Color.Black,
+                            backgroundColor = Color.LightGray.copy(alpha = 0.1f),
+                            cursorColor = Color.Black
+                        )
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = {
-
+                              if(Remark.isNullOrEmpty()){
+                                  scope.launch {
+                                      snackbarHostState.showSnackbar("Please enter Remarks.")
+                                  }
+                              }
+                            else{
                                 meter = true
-
+                                  }
 
                         },
                         modifier = Modifier
@@ -93,7 +114,7 @@ fun TruckPrecheck(driver: String?, navController: NavController) {
                     }
                 }
             } else {
-               ShowMeter (driver!!, checklist, navController)
+               ShowMeter (driver!!, checklist, navController,Remark)
             }
         }
     }
@@ -175,10 +196,15 @@ fun InspectionItemRow(
 
 
 @Composable
-fun ShowMeter(driver: String, updatedChecklist: List<InspectionItem>?, navController: NavController) {
+fun ShowMeter(
+    driver: String,
+    updatedChecklist: List<InspectionItem>?,
+    navController: NavController,
+    Remark: String
+) {
     var image by remember { mutableStateOf<ByteArray?>(null) }
     var meterReading by remember { mutableStateOf("") }
-    var Remark by remember { mutableStateOf("") }
+
     var loading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -224,26 +250,7 @@ fun ShowMeter(driver: String, updatedChecklist: List<InspectionItem>?, navContro
                     cursorColor = Color.Black
                 )
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = Remark,
-                onValueChange = { Remark = it },
-                label = { Text("Enter Remarks") },
-                keyboardOptions = KeyboardOptions.Default.copy(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                shape = RoundedCornerShape(10.dp),
-                colors = TextFieldDefaults.textFieldColors(
-                    focusedIndicatorColor = Color.Black,
-                    backgroundColor = Color.LightGray.copy(alpha = 0.1f),
-                    cursorColor = Color.Black
-                )
-            )
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
@@ -260,11 +267,7 @@ fun ShowMeter(driver: String, updatedChecklist: List<InspectionItem>?, navContro
                                 loading = false
                                 snackbarHostState.showSnackbar("Please pick meter image")
                             }
-                            Remark.isEmpty()->{
-                                loading = false
-                                snackbarHostState.showSnackbar("Please Enter Remark.")
 
-                            }
                             else -> {
                                 LoginHandler().sendTruckData(
                                     driverId = driver,

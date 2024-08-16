@@ -10,6 +10,7 @@ enum class Api(val url:String) {
     Location("${Baseurl}submit_location.php"),
     Admin("https://works.diginspire.in/driverapp/admin.php"),
     History("https://works.diginspire.in/driverapp/api/lastweekdata.php"),
-    Profile("https://works.diginspire.in/driverapp/api/profile.php")
+    Profile("https://works.diginspire.in/driverapp/api/profile.php"),
+    Reset("https://works.diginspire.in/driverapp/api/resetstatus.php")
 }
 val Baseurl="https://works.diginspire.in/driverapp/api/"
